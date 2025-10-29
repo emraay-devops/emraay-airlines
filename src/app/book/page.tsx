@@ -285,7 +285,7 @@ export default function BookPage() {
                   </div>
                   <div>
                     <h4 className="text-white font-semibold">Flight Preparation</h4>
-                    <p className="text-blue-200 text-sm">We'll prepare your aircraft and coordinate all logistics</p>
+                    <p className="text-blue-200 text-sm">We&apos;ll prepare your aircraft and coordinate all logistics</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">

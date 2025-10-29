@@ -273,7 +273,7 @@ export default function Home() {
                 className="h-12 w-auto"
               />
               <p className="text-blue-200">
-                The world's premier private jet charter service, delivering luxury, safety, and convenience.
+                The world&apos;s premier private jet charter service, delivering luxury, safety, and convenience.
               </p>
             </div>
             <div>
