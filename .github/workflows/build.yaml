@@ -38,40 +38,43 @@ jobs:
           set -euo pipefail
 
           cd ~/emraay-airlines
-
-          # --- 0) get latest code on the target branch ---
           git fetch origin
           git checkout github-actions
           git reset --hard origin/github-actions
 
-          # --- 1) stop whatever is on :3000 ---
-          sudo ss -ltnp | grep ':3000' || echo "nothing on 3000"
-          sudo fuser -k 3000/tcp || true
-          sudo ss -ltnp | grep ':3000' || echo "stopped: no listener on :3000"
+          # 1) stop whatever is on :3000 (don't fail if not found)
+          set +e
+          sudo ss -ltnp | grep ':3000'
+          sudo fuser -k 3000/tcp
+          sudo ss -ltnp | grep ':3000'
+          set -e
 
-          # --- 2) build fresh ---
+          # 2) build fresh
           npm ci
           npm run build
 
-          # --- 3) start Next.js (public test: bind to all interfaces) ---
+          # 3) start (public test) and log
           nohup npm start -- -p 3000 -H 0.0.0.0 > /tmp/next.log 2>&1 & echo $! > /tmp/next.pid
-          sleep 2
-          tail -n 50 /tmp/next.log || true
 
-          # --- 4) verify listener & readiness ---
-          sudo ss -ltnp | grep ':3000'
-          for i in {1..60}; do
+          # 4) readiness loop (max 90s)
+          ready=0
+          for i in {1..90}; do
             if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
-              echo "✅ App is up on 0.0.0.0:3000"
-              exit 0
+              ready=1; break
             fi
             sleep 1
           done
 
-          echo "❌ App failed to start. Last 200 lines of /tmp/next.log:"
-          tail -n 200 /tmp/next.log || true
-          exit 1
+          if [ "$ready" -eq 1 ]; then
+            echo "✅ App is up on 0.0.0.0:3000"
+            exit 0
+          else
+            echo "❌ App failed to start. Tail of /tmp/next.log:"
+            tail -n 200 /tmp/next.log || true
+            exit 1
+          fi
         EOF
+
 
     # - name: Set up Node.js
     #   uses: actions/setup-node@v6

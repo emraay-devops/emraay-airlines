@@ -22,6 +22,7 @@ export default function Home() {
               <Link href="#fleet" className="text-white hover:text-blue-300 transition-colors">Our Fleet</Link>
               <Link href="#services" className="text-white hover:text-blue-300 transition-colors">Services</Link>
               <Link href="#about" className="text-white hover:text-blue-300 transition-colors">About</Link>
+              <Link href="http://emraaysolutions.com" className="text-white hover:text-blue-300 transition-colors">Emraay Website</Link>
               <Link href="/book" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
                 Book Flight
               </Link>
