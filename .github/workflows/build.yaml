@@ -47,9 +47,3 @@ jobs:
     # - name: Test Application
     #   run: |
     #     curl -f http://localhost:3000 || exit 1
-
-    - Git pull
-    - npm install
-    - Build node App
-    - npm start &
-    - Test Application
