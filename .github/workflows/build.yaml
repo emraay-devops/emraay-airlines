@@ -19,7 +19,7 @@ jobs:
     - uses: webfactory/ssh-agent@v0.9.0
       with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    - test SSH connection
+    - name: test SSH connection
       run: ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "This is a successful SSH connection test"'
       
 
