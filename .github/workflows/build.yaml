@@ -32,43 +32,45 @@ jobs:
     #       curl -f http://localhost:3000 || exit 1
           
     #       EOF
-    - name: test SSH connection and deploy App
+    - name: Deploy to EC2 (stop→build→start→verify)
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} <<'EOF'
           set -euo pipefail
 
-          echo "This is a successful SSH connection test" >> ~/myname2.txt
           cd ~/emraay-airlines
 
-          # Make sure we're on the right code
+          # --- 0) get latest code on the target branch ---
           git fetch origin
           git checkout github-actions
           git reset --hard origin/github-actions
 
+          # --- 1) stop whatever is on :3000 ---
+          sudo ss -ltnp | grep ':3000' || echo "nothing on 3000"
           sudo fuser -k 3000/tcp || true
+          sudo ss -ltnp | grep ':3000' || echo "stopped: no listener on :3000"
 
-          # Clean install & build
+          # --- 2) build fresh ---
           npm ci
           npm run build
 
-          # Start Next.js in background, bind to loopback, capture logs
-          nohup npm start -- -p 3000 -H 127.0.0.1 > /tmp/next.log 2>&1 &
+          # --- 3) start Next.js (public test: bind to all interfaces) ---
+          nohup npm start -- -p 3000 -H 0.0.0.0 > /tmp/next.log 2>&1 & echo $! > /tmp/next.pid
+          sleep 2
+          tail -n 50 /tmp/next.log || true
 
-          # Wait up to 30s for port 3000 to accept connections
-          for i in {1..30}; do
+          # --- 4) verify listener & readiness ---
+          sudo ss -ltnp | grep ':3000'
+          for i in {1..60}; do
             if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
-              echo "App is up on 127.0.0.1:3000"
-              break
+              echo "✅ App is up on 0.0.0.0:3000"
+              exit 0
             fi
             sleep 1
           done
 
-          # If still not up, print logs and fail
-          if ! curl -fsS http://127.0.0.1:3000/ >/dev/null; then
-            echo "App failed to start; last 200 lines of /tmp/next.log:"
-            tail -n 200 /tmp/next.log || true
-            exit 1
-          fi
+          echo "❌ App failed to start. Last 200 lines of /tmp/next.log:"
+          tail -n 200 /tmp/next.log || true
+          exit 1
         EOF
 
     # - name: Set up Node.js
