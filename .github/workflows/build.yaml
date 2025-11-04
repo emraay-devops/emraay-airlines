@@ -20,8 +20,18 @@ jobs:
       with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: test SSH connection
-      run: ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "This is a successful SSH connection test" >> myname.txt'
-      
+      run: | # ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "This is a successful SSH connection test" >> myname2.txt'
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} <<EOF
+          echo "This is a successful SSH connection test" >> myname2.txt
+          cd emraay-airlines
+          git pull origin github-actions
+          git checkout github-actions
+          npm install
+          npm run build
+          npm start &
+          curl -f http://localhost:3000 || exit 1
+          
+          EOF
 
 
     # - name: Set up Node.js
@@ -37,3 +47,9 @@ jobs:
     # - name: Test Application
     #   run: |
     #     curl -f http://localhost:3000 || exit 1
+
+    - Git pull
+    - npm install
+    - Build node App
+    - npm start &
+    - Test Application
