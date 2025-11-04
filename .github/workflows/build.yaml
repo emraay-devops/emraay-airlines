@@ -45,10 +45,7 @@ jobs:
           git checkout github-actions
           git reset --hard origin/github-actions
 
-          PID=$(sudo lsof -t -i TCP:3000 -s TCP:LISTEN || true)
-          [ -n "$PID" ] && kill "$PID" || true
-          sleep 2
-          [ -n "$PID" ] && sudo kill -9 "$PID" 2>/dev/null || true
+          sudo fuser -k 3000/tcp || true
 
           # Clean install & build
           npm ci
