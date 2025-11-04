@@ -43,7 +43,7 @@ export default function Home() {
                 </h1>
                 <p className="text-xl text-blue-100 max-w-lg">
                   Experience the ultimate in private aviation with Emraay Airlines. 
-                  Premium service, unmatched comfort, and global reach.
+                  Premium service, unmatched comfort, and global reach. Your journey begins here.
                 </p>
               </div>
               
