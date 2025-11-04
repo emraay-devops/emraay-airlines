@@ -45,12 +45,14 @@ jobs:
           git checkout github-actions
           git reset --hard origin/github-actions
 
+          PID=$(sudo lsof -t -i TCP:3000 -s TCP:LISTEN || true)
+          [ -n "$PID" ] && kill "$PID" || true
+          sleep 2
+          [ -n "$PID" ] && sudo kill -9 "$PID" 2>/dev/null || true
+
           # Clean install & build
           npm ci
           npm run build
-
-          # stop any existing Next.js started earlier
-          pkill -f "npm start -- -p 3000" || pkill -f "next start" || true
 
           # Start Next.js in background, bind to loopback, capture logs
           nohup npm start -- -p 3000 -H 127.0.0.1 > /tmp/next.log 2>&1 &
