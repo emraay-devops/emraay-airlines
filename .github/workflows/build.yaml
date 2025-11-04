@@ -49,6 +49,9 @@ jobs:
           npm ci
           npm run build
 
+          # stop any existing Next.js started earlier
+          pkill -f "npm start -- -p 3000" || pkill -f "next start" || true
+
           # Start Next.js in background, bind to loopback, capture logs
           nohup npm start -- -p 3000 -H 127.0.0.1 > /tmp/next.log 2>&1 &
 
