@@ -43,9 +43,9 @@ jobs:
           git reset --hard origin/github-actions
 
           # 1) stop old listener (don't fail if absent)
-          set +e
+          # set +e
           sudo fuser -k 3000/tcp >/dev/null 2>&1
-          set -e
+          # set -e
 
           # 2) build
           npm ci
@@ -55,7 +55,7 @@ jobs:
           nohup npm start -- -p 3000 -H 0.0.0.0 > /tmp/next.log 2>&1 & echo $! > /tmp/next.pid
 
           # 4) readiness loop (no other curls outside this)
-          for i in {1..120}; do
+          for i in {1..30}; do
             if curl -fsS --max-time 2 http://127.0.0.1:3000/ >/dev/null; then
               echo "✅ App is up on 0.0.0.0:3000"
               exit 0

@@ -121,7 +121,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-2">Bombardier Global 7500</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">Bombardier Global 7500 - V3</h3>
                 <p className="text-blue-200 mb-4">Ultra-long range, 19 passengers</p>
                 <div className="space-y-2 text-sm text-blue-100">
                   <div className="flex justify-between">
