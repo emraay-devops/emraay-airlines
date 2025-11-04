@@ -19,19 +19,7 @@ jobs:
     - uses: webfactory/ssh-agent@v0.9.0
       with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    # - name: test SSH connection
-    #   run: | # ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "This is a successful SSH connection test" >> myname2.txt'
-    #     ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} <<EOF
-    #       echo "This is a successful SSH connection test" >> myname2.txt
-    #       cd emraay-airlines
-    #       git pull origin github-actions
-    #       git checkout github-actions
-    #       npm install
-    #       npm run build
-    #       npm start &
-    #       curl -f http://localhost:3000 || exit 1
-          
-    #       EOF
+
     - name: Deploy to EC2 (stop→build→start→verify)
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} <<'EOF'
@@ -42,33 +30,27 @@ jobs:
           git checkout github-actions
           git reset --hard origin/github-actions
 
-          # 1) stop old listener (don't fail if absent)
-          # set +e
-          sudo fuser -k 3000/tcp >/dev/null 2>&1
-          # set -e
+          # stop old listener (ok if none)
+          set +e; sudo fuser -k 3000/tcp >/dev/null 2>&1; set -e
 
-          # 2) build
           npm ci
           npm run build
 
-          # 3) start (public test). For Nginx later, change -H to 127.0.0.1
           nohup npm start -- -p 3000 -H 0.0.0.0 > /tmp/next.log 2>&1 & echo $! > /tmp/next.pid
 
-          # 4) readiness loop (no other curls outside this)
-          # for i in {1..30}; do
-          #   if curl -fsS --max-time 2 http://127.0.0.1:3000/ >/dev/null; then
-          #     echo "✅ App is up on 0.0.0.0:3000"
-          #     exit 0
-          #   fi
-          #   sleep 1
-          # done
-
-          # echo "❌ App failed to start. Tail of /tmp/next.log:"
-          # tail -n 200 /tmp/next.log || true
-          # exit 1
+          # ---- READINESS (no hard failures while waiting) ----
+          timeout=120    # seconds
+          start=$SECONDS
+          until curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1; do
+            if [ $(( SECONDS - start )) -ge $timeout ]; then
+              echo "❌ App not ready after ${timeout}s. Tail log:"; tail -n 200 /tmp/next.log || true
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "✅ App is up on 0.0.0.0:3000"
+          exit 0
         EOF
-
-
 
 
     # - name: Set up Node.js
