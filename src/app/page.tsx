@@ -156,8 +156,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-2xl font-bold text-white mb-2">Cessna Citation X</h3>
-                <p className="text-blue-200 mb-4">High-speed, 12 passengers</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Embraer E190 Long Haul Jet</h3>
+                <p className="text-blue-200 mb-4">High-speed, 25 passengers</p>
                 <div className="space-y-2 text-sm text-blue-100">
                   <div className="flex justify-between">
                     <span>Range:</span>
