@@ -20,10 +20,28 @@ export default function BookPage() {
     specialRequests: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would submit to a backend
-    alert('Booking request submitted! Our team will contact you within 2 hours.')
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(data.message)
+      } else {
+        alert(data.message || 'Something went wrong. Please try again.')
+      }
+    } catch {
+      alert('Failed to submit. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -249,9 +267,10 @@ export default function BookPage() {
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg text-lg font-semibold transition-colors"
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white py-4 rounded-lg text-lg font-semibold transition-colors shadow-lg"
               >
-                Submit Booking Request
+                {isSubmitting ? 'Submitting...' : 'Submit Booking Request'}
               </button>
             </form>
           </div>
@@ -285,7 +304,7 @@ export default function BookPage() {
                   </div>
                   <div>
                     <h4 className="text-white font-semibold">Flight Preparation</h4>
-                    <p className="text-blue-200 text-sm">We'll prepare your aircraft and coordinate all logistics</p>
+                    <p className="text-blue-200 text-sm">We&apos;ll prepare your aircraft and coordinate all logistics</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -339,3 +358,4 @@ export default function BookPage() {
     </div>
   )
 }
+
